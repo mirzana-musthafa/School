@@ -9,49 +9,13 @@ body {
     font-family: Arial;
     text-align: center;
     background: #eef2f7;
+    margin: 0;
+    padding: 10px;
 }
 
 h2 {
     margin-top: 10px;
 }
-
-.devices {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.device {
-    width: 110px;
-    margin: 8px;
-    padding: 5px;
-    background: white;
-    border-radius: 10px;
-    cursor: grab;
-    border: 1px solid #ccc;
-}
-
-.device img {
-    width: 60px;
-}
-
-.categories {
-    display: flex;
-    justify-content: space-around;
-    flex-wrap: wrap;
-}
-
-.circle {
-    width: 230px;
-    height: 230px;
-    border-radius: 50%;
-    border: 3px dashed #555;
-    margin: 15px;
-    padding: 10px;
-}
-
-.correct { background: #c8f7c5; }
-.wrong { background: #f7c5c5; }
 
 #timer {
     font-size: 22px;
@@ -62,12 +26,73 @@ h2 {
 #message {
     font-size: 22px;
     color: green;
+    margin: 10px;
 }
 
 button {
     padding: 10px 20px;
-    margin: 10px;
+    margin: 5px;
     font-size: 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.8;
+}
+
+.devices {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.device {
+    width: 120px;
+    margin: 8px;
+    padding: 8px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.device img {
+    width: 60px;
+}
+
+.categories {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.circle {
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    border: 3px dashed #555;
+    margin: 15px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    background: #fff;
+}
+
+.correct {
+    background: #c8f7c5 !important;
+}
+
+.wrong {
+    background: #f7c5c5 !important;
 }
 </style>
 </head>
@@ -79,9 +104,9 @@ button {
 <div id="timer">Time: 0 s</div>
 <div id="message"></div>
 
-<button onclick="startGame()">Start</button>
-<button onclick="checkAnswers()">Check</button>
-<button onclick="resetGame()">Reset</button>
+<button onclick="startGame()" style="background:#2ecc71;color:white;">Start</button>
+<button onclick="checkAnswers()" style="background:#3498db;color:white;">Check</button>
+<button onclick="resetGame()" style="background:#e74c3c;color:white;">Reset</button>
 
 <div class="devices" id="devices"></div>
 
@@ -105,13 +130,13 @@ const devicesData = [
 
 { name:"Monitor", img:"https://img.icons8.com/color/96/monitor.png", type:"output" },
 { name:"Speaker", img:"https://img.icons8.com/color/96/speaker.png", type:"output" },
-{ name:"Printer", img:"https://img.freepik.com/premium-photo/printer-clip-art-cartoon-illustration-isolated-white-background_15083-9429.jpg", type:"output" },
-{ name:"Projector", img:"https://tse2.mm.bing.net/th/id/OIP.k_pcuGM8NG08SkcP1gwRrAHaE1?pid=Api&h=220&P=0", type:"output" },
+{ name:"Printer", img:"https://classroomclipart.com/image/static2/preview2/computer-inkjet-printer-24316.jpg", type:"output" },
+{ name:"Projector", img:"https://clipart-library.com/8300/2368/movie-projector-clipart-illustration_251822-519.jpg", type:"output" },
 
 { name:"RAM", img:"https://cdn1.iconfinder.com/data/icons/computer-filled-line/100/computer_ram-512.png", type:"storage" },
 { name:"Hard Disk", img:"https://img.icons8.com/color/96/hdd.png", type:"storage" },
 { name:"SSD", img:"https://img.icons8.com/color/96/ssd.png", type:"storage" },
-{ name:"Pendrive", img:"https://static.vecteezy.com/system/resources/previews/054/489/228/non_2x/digital-storage-usb-flash-drive-clipart-in-vibrant-cartoon-style-perfect-for-technology-or-data-transfer-concepts-free-vector.jpg", type:"storage" },
+{ name:"Pendrive", img:"https://img.icons8.com/color/96/usb-memory-stick.png", type:"storage" },
 { name:"CD", img:"https://img.icons8.com/color/96/cd.png", type:"storage" },
 
 { name:"Router", img:"https://img.icons8.com/color/96/wifi-router.png", type:"network" },
@@ -122,39 +147,46 @@ const devicesData = [
 
 devicesData.sort(() => Math.random() - 0.5);
 
-let dragged = null;
+let selectedDevice = null;
 let seconds = 0;
 let timerInterval = null;
 let started = false;
 
-// Load devices
+// LOAD DEVICES
 const container = document.getElementById("devices");
 
 devicesData.forEach(d => {
     const div = document.createElement("div");
     div.className = "device";
-    div.draggable = true;
     div.dataset.type = d.type;
 
     div.innerHTML = `<img src="${d.img}"><br>${d.name}`;
 
-    div.addEventListener("dragstart", () => {
-        if (started) dragged = div;
+    // TOUCH + CLICK SELECT
+    div.addEventListener("click", () => {
+        if (!started) return;
+
+        document.querySelectorAll(".device").forEach(x => x.style.border = "1px solid #ccc");
+
+        selectedDevice = div;
+        div.style.border = "3px solid #3498db";
     });
 
     container.appendChild(div);
 });
 
-// Drag & Drop
+// CATEGORY CLICK (DROP)
 document.querySelectorAll(".circle").forEach(c => {
-    c.addEventListener("dragover", e => e.preventDefault());
+    c.addEventListener("click", () => {
+        if (!started || !selectedDevice) return;
 
-    c.addEventListener("drop", e => {
-        if (dragged && started) c.appendChild(dragged);
+        c.appendChild(selectedDevice);
+        selectedDevice.style.border = "1px solid #ccc";
+        selectedDevice = null;
     });
 });
 
-// Start timer
+// START GAME
 function startGame() {
     if (!started) {
         started = true;
@@ -165,7 +197,7 @@ function startGame() {
     }
 }
 
-// Check answers
+// CHECK ANSWERS
 function checkAnswers() {
     if (!started) return;
 
@@ -192,7 +224,7 @@ function checkAnswers() {
     }
 }
 
-// Reset
+// RESET
 function resetGame() {
     location.reload();
 }
