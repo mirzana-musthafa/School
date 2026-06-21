@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Match OS Logos</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f0f8ff;
+    text-align:center;
+    margin:5px;
+}
+
+h1{
+    color:#0066cc;
+    font-size:22px;
+    margin:5px;
+}
+
+p{
+    font-size:14px;
+    margin:5px;
+}
+
+#names{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:6px;
+    margin-bottom:10px;
+}
+
+.name{
+    background:#007bff;
+    color:white;
+    padding:8px 12px;
+    border-radius:8px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:grab;
+}
+
+.container{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+    gap:10px;
+    max-width:850px;
+    margin:auto;
+}
+
+.dropzone{
+    background:white;
+    border:2px dashed #999;
+    border-radius:8px;
+    padding:8px;
+    min-height:130px;
+}
+
+.logo{
+    width:70px;
+    height:70px;
+    object-fit:contain;
+}
+
+.drop-text{
+    margin-top:8px;
+    font-size:14px;
+    color:#666;
+}
+
+button{
+    margin:10px 4px;
+    padding:10px 16px;
+    font-size:16px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+}
+
+.check-btn{
+    background:#28a745;
+    color:white;
+}
+
+.reload-btn{
+    background:#007bff;
+    color:white;
+}
+
+.correct{
+    color:green;
+    font-weight:bold;
+}
+
+.wrong{
+    color:red;
+    font-weight:bold;
+}
+
+#result{
+    font-size:18px;
+    font-weight:bold;
+    margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🖥️ Match the Operating System and Logo</h1>
+<p>Drag the OS name onto the correct logo.</p>
+
+<div id="names"></div>
+
+<div class="container" id="logos"></div>
+
+<button class="check-btn" onclick="checkAnswers()">
+Finish & Check Score
+</button>
+
+<button class="reload-btn" onclick="location.reload()">
+🔄 Try Again
+</button>
+
+<div id="result"></div>
+
+<script>
+
+const systems = [
+{
+name:"Windows",
+logo:"https://upload.wikimedia.org/wikipedia/commons/5/5f/Windows_logo_-_2012.svg"
+},
+{
+name:"iOS",
+logo:"https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg"
+},
+{
+name:"macOS",
+logo:"https://images.seeklogo.com/logo-png/38/1/apple-mac-os-logo-png_seeklogo-381401.png"
+},
+{
+name:"Android",
+logo:"https://upload.wikimedia.org/wikipedia/commons/d/d7/Android_robot.svg"
+},
+{
+name:"Ubuntu",
+logo:"https://upload.wikimedia.org/wikipedia/commons/a/ab/Logo-ubuntu_cof-orange-hex.svg"
+},
+{
+name:"Linux",
+logo:"https://upload.wikimedia.org/wikipedia/commons/3/35/Tux.svg"
+},
+{
+name:"Fedora",
+logo:"https://upload.wikimedia.org/wikipedia/commons/3/3f/Fedora_logo.svg"
+}
+];
+
+// Shuffle names
+const namesDiv = document.getElementById("names");
+const logosDiv = document.getElementById("logos");
+
+const shuffledNames = [...systems].sort(() => Math.random() - 0.5);
+
+// Create draggable names
+shuffledNames.forEach(item => {
+
+const div = document.createElement("div");
+div.className = "name";
+div.draggable = true;
+div.innerText = item.name;
+
+div.addEventListener("dragstart", e => {
+e.dataTransfer.setData("text", item.name);
+});
+
+namesDiv.appendChild(div);
+
+});
+
+// Create drop zones
+systems.forEach((item,index)=>{
+
+const zone = document.createElement("div");
+
+zone.className = "dropzone";
+zone.dataset.answer = item.name;
+
+zone.innerHTML = `
+<img src="${item.logo}" class="logo">
+<div class="drop-text">Drop Here</div>
+<div id="feedback${index}"></div>
+`;
+
+zone.addEventListener("dragover", e=>{
+e.preventDefault();
+});
+
+zone.addEventListener("drop", e=>{
+e.preventDefault();
+
+const data =
+e.dataTransfer.getData("text");
+
+zone.querySelector(".drop-text").innerText =
+data;
+});
+
+logosDiv.appendChild(zone);
+
+});
+
+// Check answers
+function checkAnswers(){
+
+let score = 0;
+
+document.querySelectorAll(".dropzone")
+.forEach((zone,index)=>{
+
+const chosen =
+zone.querySelector(".drop-text").innerText;
+
+const correct =
+zone.dataset.answer;
+
+const feedback =
+document.getElementById("feedback"+index);
+
+if(chosen === correct){
+
+score++;
+
+feedback.innerHTML =
+'<div class="correct">✔ Correct</div>';
+
+}else{
+
+feedback.innerHTML =
+'<div class="wrong">✘ ' + correct + '</div>';
+}
+
+});
+
+document.getElementById("result").innerHTML =
+`🎉 Your Score: ${score} / ${systems.length}`;
+}
+
+</script>
+
+</body>
+</html>
+```

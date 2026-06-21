@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Devices Classification Activity</title>
+
+<style>
+body {
+    font-family: Arial;
+    text-align: center;
+    background: #eef2f7;
+}
+
+h2 {
+    margin-top: 10px;
+}
+
+.devices {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.device {
+    width: 110px;
+    margin: 8px;
+    padding: 5px;
+    background: white;
+    border-radius: 10px;
+    cursor: grab;
+    border: 1px solid #ccc;
+}
+
+.device img {
+    width: 60px;
+}
+
+.categories {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.circle {
+    width: 230px;
+    height: 230px;
+    border-radius: 50%;
+    border: 3px dashed #555;
+    margin: 15px;
+    padding: 10px;
+}
+
+.correct { background: #c8f7c5; }
+.wrong { background: #f7c5c5; }
+
+#timer {
+    font-size: 22px;
+    margin: 10px;
+    font-weight: bold;
+}
+
+#message {
+    font-size: 22px;
+    color: green;
+}
+
+button {
+    padding: 10px 20px;
+    margin: 10px;
+    font-size: 16px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Computer Devices Classification</h2>
+
+<div id="timer">Time: 0 s</div>
+<div id="message"></div>
+
+<button onclick="startGame()">Start</button>
+<button onclick="checkAnswers()">Check</button>
+<button onclick="resetGame()">Reset</button>
+
+<div class="devices" id="devices"></div>
+
+<div class="categories">
+    <div class="circle" data-type="input">Input Devices</div>
+    <div class="circle" data-type="output">Output Devices</div>
+    <div class="circle" data-type="storage">Storage Devices</div>
+    <div class="circle" data-type="network">Network Devices</div>
+</div>
+
+<audio id="correctSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+
+<script>
+
+const devicesData = [
+{ name:"Mouse", img:"https://img.icons8.com/color/96/mouse.png", type:"input" },
+{ name:"Keyboard", img:"https://img.icons8.com/color/96/keyboard.png", type:"input" },
+{ name:"Scanner", img:"https://img.icons8.com/color/96/scanner.png", type:"input" },
+{ name:"Joystick", img:"https://img.icons8.com/color/96/joystick.png", type:"input" },
+{ name:"Microphone", img:"https://img.icons8.com/color/96/microphone.png", type:"input" },
+
+{ name:"Monitor", img:"https://img.icons8.com/color/96/monitor.png", type:"output" },
+{ name:"Speaker", img:"https://img.icons8.com/color/96/speaker.png", type:"output" },
+{ name:"Printer", img:"https://img.freepik.com/premium-photo/printer-clip-art-cartoon-illustration-isolated-white-background_15083-9429.jpg", type:"output" },
+{ name:"Projector", img:"https://tse2.mm.bing.net/th/id/OIP.k_pcuGM8NG08SkcP1gwRrAHaE1?pid=Api&h=220&P=0", type:"output" },
+
+{ name:"RAM", img:"https://cdn1.iconfinder.com/data/icons/computer-filled-line/100/computer_ram-512.png", type:"storage" },
+{ name:"Hard Disk", img:"https://img.icons8.com/color/96/hdd.png", type:"storage" },
+{ name:"SSD", img:"https://img.icons8.com/color/96/ssd.png", type:"storage" },
+{ name:"Pendrive", img:"https://static.vecteezy.com/system/resources/previews/054/489/228/non_2x/digital-storage-usb-flash-drive-clipart-in-vibrant-cartoon-style-perfect-for-technology-or-data-transfer-concepts-free-vector.jpg", type:"storage" },
+{ name:"CD", img:"https://img.icons8.com/color/96/cd.png", type:"storage" },
+
+{ name:"Router", img:"https://img.icons8.com/color/96/wifi-router.png", type:"network" },
+{ name:"Network Switch", img:"https://cdn.vectorstock.com/i/500p/71/95/data-network-switch-cartoon-vector-51117195.jpg", type:"network" },
+
+{ name:"Webcam", img:"https://img.icons8.com/color/96/webcam.png", type:"input" }
+];
+
+devicesData.sort(() => Math.random() - 0.5);
+
+let dragged = null;
+let seconds = 0;
+let timerInterval = null;
+let started = false;
+
+// Load devices
+const container = document.getElementById("devices");
+
+devicesData.forEach(d => {
+    const div = document.createElement("div");
+    div.className = "device";
+    div.draggable = true;
+    div.dataset.type = d.type;
+
+    div.innerHTML = `<img src="${d.img}"><br>${d.name}`;
+
+    div.addEventListener("dragstart", () => {
+        if (started) dragged = div;
+    });
+
+    container.appendChild(div);
+});
+
+// Drag & Drop
+document.querySelectorAll(".circle").forEach(c => {
+    c.addEventListener("dragover", e => e.preventDefault());
+
+    c.addEventListener("drop", e => {
+        if (dragged && started) c.appendChild(dragged);
+    });
+});
+
+// Start timer
+function startGame() {
+    if (!started) {
+        started = true;
+        timerInterval = setInterval(() => {
+            seconds++;
+            document.getElementById("timer").innerText = "Time: " + seconds + " s";
+        }, 1000);
+    }
+}
+
+// Check answers
+function checkAnswers() {
+    if (!started) return;
+
+    let allCorrect = true;
+
+    document.querySelectorAll(".device").forEach(d => {
+        d.classList.remove("correct","wrong");
+
+        let parent = d.parentElement.dataset.type;
+
+        if (parent === d.dataset.type) {
+            d.classList.add("correct");
+        } else {
+            d.classList.add("wrong");
+            allCorrect = false;
+        }
+    });
+
+    if (allCorrect) {
+        clearInterval(timerInterval);
+        document.getElementById("message").innerText =
+        "🎉 Completed in " + seconds + " seconds!";
+        document.getElementById("correctSound").play();
+    }
+}
+
+// Reset
+function resetGame() {
+    location.reload();
+}
+
+</script>
+
+</body>
+</html>
